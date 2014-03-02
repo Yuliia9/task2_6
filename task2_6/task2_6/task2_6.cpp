@@ -1,205 +1,294 @@
 #include "stdafx.h"
+#include "task2_6.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/*maximum length of surname and initials of student*/
-const int LEN = 30; 
-
-struct stud
-{
-	char name[LEN];
-	int age;
-	char sex;
-	double height;
-	double weight;
-};
-/*checking entered data and return 0 if type doesn't match requirements*/
-int Type_checking(int retCode, double val);
-int Type_checking(int retCode, int val);
-
-/*input information about students into list of students and return 0 if some data doesn't match requirements*/
-int Input(struct stud* stud_list, int num);
-
-/*displayed table of information about students*/
-void Output(struct stud* stud_list, int num);
-
-/*sorted table of information about students by surname*/
-void Sort_by_surname(struct stud* stud_table, int num);
-
-/*evaluate and display the average height and weight separate for female and male*/
-void Average(struct stud* stud_table, int num);
-
+const unsigned char ERROR = 0;
+const unsigned char SUCCESS = 1;
+const unsigned char MAIN_SUCCESS = 0;
 
 
 int main()
 {
-	printf("Please enter how many students took medical examination: ");
-	int retCode, num_of_stud;
-	retCode = scanf("%i", &num_of_stud);
+	Interface();
+	unsigned char retCode;
+	unsigned int num; 
 
-	if (0 == Type_checking(retCode, num_of_stud))
+	do 
 	{
-		return 0;
+		printf("Please enter how many students took medical examination: ");
+		retCode = scanf("%u", &num);
+		fflush(stdin); // Flush the input buffer
+
+	} while (Type_checking(retCode, (int) num) == ERROR);
+	printf("List will consist of %u students.\n", num);
+	
+	struct student* students = (student*)malloc(num*sizeof(student));
+	if (students == NULL)
+	{
+		printf("Error occurs while trying to allocate memory for list of points. \n");
+		return (int)ERROR;
 	}
 
-	struct stud* stud_list = (stud*)malloc(num_of_stud*sizeof(stud));
+	retCode = Input(students, num);
+	if (retCode == ERROR)
+	{
+		free(students);
+		return (int)ERROR;
+	}
+
+	retCode = Sort_by_surname(students, num);
+	if (retCode == ERROR)
+	{
+		free(students);
+		return (int)ERROR;
+	}
+
+	retCode = Output(students, num);
+	if (retCode == ERROR)
+	{
+		free(students);
+		return (int)ERROR;
+	}
+
+
+	retCode = Average(students, num);
+	if (retCode == ERROR)
+	{
+		free(students);
+		return (int)ERROR;
+	}
+	
+
+	system("pause");
+	free(students);
+	return MAIN_SUCCESS;
+}
+
+
+void Interface()
+{
+	printf("Hi! Please welcome to your personal students medical care handler.\n");
+	printf("You can store list of students surnames and their personal information.\n");
+	printf("Program will create for you sorted list of students \n and find average students heigth and weigth.\n");
+	printf("Program made by Yuliia Lyubchik;)\n\n");
+}
+
+
+unsigned char Input(struct student* students, unsigned int num)
+{
+	if (students == NULL)
+	{
+		printf("Error occurs trying to get access to memory.\n");
+		return ERROR;
+	}
+
 	printf("Please enter information about students. \nMaximum length of surname and initials is %i  \n", LEN);
-	if (0 == Input(stud_list, num_of_stud))
+	unsigned char retCode;
+	unsigned int i;
+	char temp[20];
+	for (i = 0; i < num; ++i)
 	{
-		return 0;
+		do 
+		{
+			printf("%i student surname and initials:  ", i + 1);
+			gets(students[i].name);
+
+		} while (strlen(students[i].name) == 0);
+		
+		do 
+		{
+			printf("age: ");
+			scanf("%s", &temp);
+			fflush(stdin); // Flush the input buffer
+		} while (Is_digit(temp) == ERROR);
+
+		students[i].age = atoi(temp);
+
+		do 
+		{
+			printf("enter char that identify sex of student(f-female, m-male): ");
+			students[i].sex = getchar();
+			fflush(stdin); // Flush the input buffer
+			if (students[i].sex != 'f' && students[i].sex != 'm')
+			{
+				printf("Data mismatch. Please next time check information.\n");
+				retCode = ERROR;
+			}
+			else
+			{
+				retCode = SUCCESS;
+			}
+		} while (retCode == ERROR);
+		
+
+		do
+		{
+			printf("height (if float number, separate it by dot): ");
+			scanf("%s", &temp);
+			fflush(stdin); // Flush the input buffer
+		} while (Is_digit(temp) == ERROR);
+
+		students[i].height = atof(temp);
+		
+		do
+		{
+			printf("weight (if float number, separate it by dot): ");
+			scanf("%s", &temp);
+			fflush(stdin); // Flush the input buffer
+		} while (Is_digit(temp) == ERROR);
+
+		students[i].weight = atof(temp);
 	}
-	Sort_by_surname(stud_list, num_of_stud);
+	return SUCCESS;
+}
+
+
+unsigned char Type_checking(unsigned char retCode, int val)
+{
+	if (retCode == ERROR)
+	{
+		printf("Type mismatch.Next time please check data.\n");
+		return ERROR;
+	}
+	if (val <= 0)
+	{
+		printf("The value can not be negative or zero.\n");
+		return ERROR;
+	}
+	return SUCCESS;
+}
+unsigned char Is_digit(const char* pstr)
+{
+	if (pstr == NULL)
+	{
+		return ERROR;
+	}
+	unsigned int i;
+	unsigned char krapka = 0;
+	for (i = 0; i < strlen(pstr); ++i)
+	{
+		if (pstr[i] >= 48 && pstr[i] <= 57)
+		{
+			continue;
+		}
+		else if (pstr[i] == '.')
+		{
+			if (krapka == 0)
+			{
+				krapka = 1;
+			}
+			else
+			{
+				printf("Type mismatch. Please next time check if you entered appropriate numbers.\n");
+				return ERROR;
+			}
+		}
+		else
+		{
+			printf("Type mismatch. Please next time check if you entered appropriate numbers.\n");
+			return ERROR;
+		}
+			
+	}
+	return SUCCESS;
+}
+
+
+unsigned char  Output(const struct student* students, unsigned  int num)
+{
+	if (students == NULL)
+	{
+		printf("Error occurs trying to get access to data to display it.\n");
+		return ERROR;
+	}
+
 	printf("\nInformation about students: \n");
 	printf("surname  age \t sex \t height weight");
-	Output(stud_list, num_of_stud);
-	Average(stud_list, num_of_stud);
-	return 0;
-}
-
-
-
-
-
-int Input(struct stud* stud_list, int num)
-{
-	int retCode;
-	for (int i = 0; i < num; i++)
+	unsigned int i;
+	for (i = 0; i < num; ++i)
 	{
-		printf("%i student surname and initials:  ", i + 1);
-		getchar();
-		gets(stud_list[i].name);
-		printf("age: ");
-		retCode = scanf("%i", &stud_list[i].age);
-		if (0 == Type_checking(retCode, stud_list[i].age))
-		{
-			return 0;
-		}
-		printf("enter char that identify sex of student(f-female, m-male): ");
-		getchar();
-		stud_list[i].sex = getchar();
-		if (stud_list[i].sex != 'f' && stud_list[i].sex != 'm')
-		{
-			printf("Data mismatch. Please next time check information.\n");
-			return 0;
-		}
-		printf("height (if float number, separate it by dot): ");
-		retCode = scanf("%lf", &stud_list[i].height);
-		if (0 == Type_checking(retCode, stud_list[i].height))
-		{
-			return 0;
-		}
-		printf("weight (if float number, separate it by dot): ");
-		retCode = scanf("%lf", &stud_list[i].weight);
-		if (0 == Type_checking(retCode, stud_list[i].weight))
-		{
-			return 0;
-		}
-		
-	}
-	return 1;
-}
-
-int Type_checking(int retCode, double val)
-{
-	if (0 == retCode)
-	{
-		printf("Type mismatch.\n");
-		return 0;
-	}
-	if (val < 0)
-	{
-		printf("The value can not be negative or null.\n");
-		return 0;
-	}
-	return 1;
-}
-int Type_checking(int retCode, int val)
-{
-	if (0 == retCode)
-	{
-		printf("Type mismatch.\n");
-		return 0;
-	}
-	if (val < 0)
-	{
-		printf("The value can not be negative or null.\n");
-		return 0;
-	}
-	return 1;
-}
-
-void Output(struct stud* stud_list, int num)
-{
-	for (int i = 0; i < num; i++)
-	{
-		printf("\n%s\t", stud_list[i].name);
-		printf("%i\t", stud_list[i].age);
-		if ('f' == stud_list[i].sex)
+		printf("\n%s\t", students[i].name);
+		printf("%i\t", students[i].age);
+		if ('f' == students[i].sex)
 		{
 			printf("female\t");
 		}
-		else if ('m' == stud_list[i].sex)
+		else if ('m' == students[i].sex)
 		{
 			printf("male\t");
 		}
-		printf("%0.2lf\t", stud_list[i].height);
-		printf("%0.2lf", stud_list[i].weight);
+		printf("%0.2lf\t", students[i].height);
+		printf("%0.2lf", students[i].weight);
 	}
-	
+	return SUCCESS;
 }
 
-void Sort_by_surname(struct stud* stud_list, int n)
+unsigned char  Sort_by_surname(struct student* students, unsigned int n)
 {
-	struct stud temp;
-	for (int i = 0; i < n; i++)
+	if (students == NULL)
 	{
-		for (int j = i + 1; j < n; j++)
+		printf("Error occurs trying to get access to date to sort it.\n");
+		return ERROR;
+	}
+	struct student temp;
+	unsigned int i, j;
+	for (i = 0; i < n; ++i)
+	{
+		for (j = i + 1; j < n; ++j)
 		{
-			if (1 == strcmp((stud_list + i)->name, (stud_list + j)->name))
+			if (1 == strcmp((students + i)->name, (students + j)->name))
 			{
-				temp = *(stud_list + i);
-				*(stud_list + i) = *(stud_list + j);
-				*(stud_list + j) = temp;
+				memcpy(&temp, students+ j, sizeof(student));
+				memcpy(students + j, students + i, sizeof(student));
+				memcpy(students + i, &temp, sizeof(student));
 			}
 		}
 	}
+	return SUCCESS;
 }
 
-void Average(struct stud* stud_table, int num)
+unsigned char  Average(const struct student* students, unsigned int num)
 {
+	if (students == NULL)
+	{
+		printf("Error occurs trying to get access to data to provide estimation.\n");
+		return ERROR;
+	}
 	double aver_height1 = 0, aver_height2 = 0;
 	double aver_weight1 = 0, aver_weight2 = 0;
-	int n1 = 0, n2 = 0;
-	for (int i = 0; i < num; i++)
+	unsigned int quatity1 = 0, quantity2 = 0;
+	unsigned int i;
+	for (i = 0; i < num; ++i)
 	{
-		if ('f' == stud_table[i].sex)
+		if ('f' == students[i].sex)
 		{
-			n1++;
-			aver_height1 += stud_table[i].height;
-			aver_weight1 += stud_table[i].weight;
+			++quatity1;
+			aver_height1 += students[i].height;
+			aver_weight1 += students[i].weight;
 		}
-		else if ('m' == stud_table[i].sex)
+		else if ('m' == students[i].sex)
 		{
-			n2++;
-			aver_height2 += stud_table[i].height;
-			aver_weight2 += stud_table[i].weight;
+			++quantity2;
+			aver_height2 += students[i].height;
+			aver_weight2 += students[i].weight;
 		}
 	}
-	if (n1 != 0)
+	if (quatity1 != 0)
 	{
-		aver_height1 /= n1;
-		aver_weight1 /= n1;
+		aver_height1 /= quatity1;
+		aver_weight1 /= quatity1;
 		printf("\nAverage female height and weight respectively: %0.2lf, %0.2lf\n", aver_height1, aver_weight1);
 	}
 	else
 	{
 		printf("\nSorry, there is no womens for evaluating average height and weight.\n");
 	}
-	if (n2 != 0)
+	if (quantity2 != 0)
 	{
-		aver_height2 /= n2;
-		aver_weight2 /= n2;
+		aver_height2 /= quantity2;
+		aver_weight2 /= quantity2;
 		printf("\nAverage male height and weight respectively: %0.2lf, %0.2lf\n", aver_height2, aver_weight2);
 	}
 	else
@@ -207,6 +296,6 @@ void Average(struct stud* stud_table, int num)
 		printf("\nSorry, there is no mans for evaluating average height and weight.\n");
 	}
 	
-		
+	return SUCCESS;
 	
 }
