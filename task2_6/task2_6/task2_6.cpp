@@ -1,5 +1,22 @@
+/**
+* @file		task2_6.cpp
+* @brief	Program creates database for holding informations about students medical examination.
+			Database stores students surnames, age, sex, height and weight.
+			Program also sorts list by student's surname 
+			and estimates average height and weight separate for male and female.
+
+*
+* Copyright 2014 by Yuliia Lyubchik
+*
+* This software is the confidential and proprietary information
+* of Yuliia Lyubchik. ("Confidential Information").  You
+* shall not disclose such Confidential Information and shall use
+* it only with permission from Yuliia.
+*/
+
+
 #include "stdafx.h"
-#include "task2_6.h"
+#include "task2_6.h" /*defines data types and prototypes of used in this file functions*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,12 +41,13 @@ int main()
 	} while (Type_checking(retCode, (int) num) == ERROR);
 	printf("List will consist of %u students.\n", num);
 	
-	struct student* students = (student*)malloc(num*sizeof(student));
+	struct student* students = (student*)malloc (num * sizeof (student) );
 	if (students == NULL)
 	{
 		printf("Error occurs while trying to allocate memory for list of points. \n");
 		return (int)ERROR;
 	}
+
 
 	retCode = Input(students, num);
 	if (retCode == ERROR)
@@ -38,12 +56,14 @@ int main()
 		return (int)ERROR;
 	}
 
+
 	retCode = Sort_by_surname(students, num);
 	if (retCode == ERROR)
 	{
 		free(students);
 		return (int)ERROR;
 	}
+
 
 	retCode = Output(students, num);
 	if (retCode == ERROR)
@@ -69,10 +89,12 @@ int main()
 
 void Interface()
 {
+	printf("---------------------------------------------------------------------------\n");
 	printf("Hi! Please welcome to your personal students medical care handler.\n");
 	printf("You can store list of students surnames and their personal information.\n");
-	printf("Program will create for you sorted list of students \n and find average students heigth and weigth.\n");
-	printf("Program made by Yuliia Lyubchik;)\n\n");
+	printf("Program will create for you sorted list of students \n and find average students height and weight.\n");
+	printf("Program made by Yuliia Lyubchik;)\n");
+	printf("---------------------------------------------------------------------------\n\n");
 }
 
 
@@ -80,7 +102,7 @@ unsigned char Input(struct student* students, unsigned int num)
 {
 	if (students == NULL)
 	{
-		printf("Error occurs trying to get access to memory.\n");
+		printf("Error occurs while trying to get access to memory to input data.\n");
 		return ERROR;
 	}
 
@@ -159,6 +181,9 @@ unsigned char Type_checking(unsigned char retCode, int val)
 	}
 	return SUCCESS;
 }
+
+
+
 unsigned char Is_digit(const char* pstr)
 {
 	if (pstr == NULL)
@@ -167,9 +192,9 @@ unsigned char Is_digit(const char* pstr)
 	}
 	unsigned int i;
 	unsigned char krapka = 0;
-	for (i = 0; i < strlen(pstr); ++i)
+	for ( i = 0; i < strlen(pstr); ++i )
 	{
-		if (pstr[i] >= 48 && pstr[i] <= 57)
+		if ( pstr[i] >= 48 && pstr[i] <= 57 )
 		{
 			continue;
 		}
@@ -189,18 +214,18 @@ unsigned char Is_digit(const char* pstr)
 		{
 			printf("Type mismatch. Please next time check if you entered appropriate numbers.\n");
 			return ERROR;
-		}
-			
+		}	
 	}
 	return SUCCESS;
 }
+
 
 
 unsigned char  Output(const struct student* students, unsigned  int num)
 {
 	if (students == NULL)
 	{
-		printf("Error occurs trying to get access to data to display it.\n");
+		printf("Error occurs while trying to get access to data to display it.\n");
 		return ERROR;
 	}
 
@@ -229,14 +254,14 @@ unsigned char  Sort_by_surname(struct student* students, unsigned int n)
 {
 	if (students == NULL)
 	{
-		printf("Error occurs trying to get access to date to sort it.\n");
+		printf("Error occurs while trying to get access to data to sort it.\n");
 		return ERROR;
 	}
 	struct student temp;
 	unsigned int i, j;
-	for (i = 0; i < n; ++i)
+	for ( i = 0; i < n; ++i )
 	{
-		for (j = i + 1; j < n; ++j)
+		for ( j = i + 1; j < n; ++j )
 		{
 			if (1 == strcmp((students + i)->name, (students + j)->name))
 			{
@@ -249,18 +274,22 @@ unsigned char  Sort_by_surname(struct student* students, unsigned int n)
 	return SUCCESS;
 }
 
+
 unsigned char  Average(const struct student* students, unsigned int num)
 {
+
 	if (students == NULL)
 	{
-		printf("Error occurs trying to get access to data to provide estimation.\n");
+		printf("Error occurs while trying to get access to data to provide estimation.\n");
 		return ERROR;
 	}
+
 	double aver_height1 = 0, aver_height2 = 0;
 	double aver_weight1 = 0, aver_weight2 = 0;
 	unsigned int quatity1 = 0, quantity2 = 0;
 	unsigned int i;
-	for (i = 0; i < num; ++i)
+
+	for ( i = 0; i < num; ++i )
 	{
 		if ('f' == students[i].sex)
 		{
@@ -268,6 +297,7 @@ unsigned char  Average(const struct student* students, unsigned int num)
 			aver_height1 += students[i].height;
 			aver_weight1 += students[i].weight;
 		}
+
 		else if ('m' == students[i].sex)
 		{
 			++quantity2;
@@ -275,27 +305,30 @@ unsigned char  Average(const struct student* students, unsigned int num)
 			aver_weight2 += students[i].weight;
 		}
 	}
-	if (quatity1 != 0)
+
+	if ( quatity1 != 0 )
 	{
 		aver_height1 /= quatity1;
 		aver_weight1 /= quatity1;
 		printf("\nAverage female height and weight respectively: %0.2lf, %0.2lf\n", aver_height1, aver_weight1);
 	}
+
 	else
 	{
 		printf("\nSorry, there is no womens for evaluating average height and weight.\n");
 	}
+
 	if (quantity2 != 0)
 	{
 		aver_height2 /= quantity2;
 		aver_weight2 /= quantity2;
 		printf("\nAverage male height and weight respectively: %0.2lf, %0.2lf\n", aver_height2, aver_weight2);
 	}
+
 	else
 	{
 		printf("\nSorry, there is no mans for evaluating average height and weight.\n");
 	}
 	
 	return SUCCESS;
-	
 }
